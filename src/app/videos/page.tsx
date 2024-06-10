@@ -3,9 +3,10 @@
 import { YouTubeEmbed } from "@next/third-parties/google";
 import useSWR from 'swr';
 import { useSession } from 'next-auth/react';
-import fetcherWithAuth from '../../utils/fetcher';
+import fetcherWithAuth from '../utils/fetcher';
 import camelcaseKeys from 'camelcase-keys';
-import { KpopVideo } from '../../types';
+import { KpopVideo } from '../types';
+import Link from 'next/link'
 
 const KpopVideosIndex = () => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -25,13 +26,15 @@ const KpopVideosIndex = () => {
       <h1 className="text-2xl font-bold mb-4">Kpop Videos</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {videos.map((video: KpopVideo) => (
-          <div key={video.id} className="bg-white p-4 rounded shadow">
-            <YouTubeEmbed videoid={video.videoId} />
-            <h2 className="text-lg font-semibold">{video.name}</h2>
-            <p className="text-gray-600">Artist: {video.artist.name}</p>
-            <p className="text-gray-600">Views: {video.viewCount}</p>
-            <p className="text-gray-600">Posted on: {new Date(video.postedAt).toLocaleDateString()}</p>
-          </div>
+          <Link key={video.id} href={`/videos/${video.id}`} passHref>
+            <div key={video.id} className="bg-white p-4 rounded shadow">
+              <YouTubeEmbed videoid={video.videoId} />
+              <h2 className="text-lg font-semibold">{video.name}</h2>
+              <p className="text-gray-600">Artist: {video.artist.name}</p>
+              <p className="text-gray-600">Views: {video.viewCount}</p>
+              <p className="text-gray-600">Posted on: {new Date(video.postedAt).toLocaleDateString()}</p>
+            </div>
+          </Link>
         ))}
       </div>
     </div>
