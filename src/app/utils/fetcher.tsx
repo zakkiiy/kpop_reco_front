@@ -1,18 +1,20 @@
-import axios, { AxiosResponse, AxiosError } from 'axios';
+import axios, { AxiosResponse, AxiosError } from 'axios'
 import { getSession } from 'next-auth/react';
 
-const fetcherWithAuth = async (url: string) => {
+// 認証トークンをヘッダーに付加するfetcher関数
+const fetcherWithAuth = async (path: string) => {
   const session = await getSession();
   const token = session?.accessToken;
   const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
-  try {
-    const response: AxiosResponse = await axios.get(url, { headers, withCredentials: true });
-    return response.data;
-  } catch (error) {
-    const axiosError = error as AxiosError;
-    throw axiosError;
-  }
+  const url = path
+  return axios.get(url, {
+    headers: headers,
+    withCredentials: true
+  })
+  .then((res: AxiosResponse) => res.data)
+  .catch((error: AxiosError) => {
+    throw error;
+  })
 };
 
-export default fetcherWithAuth;
+export default fetcherWithAuth

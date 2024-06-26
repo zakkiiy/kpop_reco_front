@@ -43,9 +43,9 @@ const handler = NextAuth({
 	secret: process.env.NEXT_PUBLIC_SECRET || '',
   callbacks: {
 		async jwt({ token, account, user }) {
-			if (account && account.accessToken && user) {
+			if (account && account.access_token && user) {
 				token.id = user.id;
-				token.accessToken = account.accessToken;
+				token.accessToken = account.access_token;
 			}
 			return token;
 		},
