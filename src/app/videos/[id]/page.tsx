@@ -1,23 +1,23 @@
 'use client'
 
+import { useState, useEffect } from 'react';
 import useSWR from 'swr';
 import fetcherWithAuth from '../../utils/fetcher';
-import { useRouter, useSearchParams, useParams } from 'next/navigation';
-import { useSession, signIn } from 'next-auth/react';
+import { useParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import camelcaseKeys from "camelcase-keys";
 import { KpopVideo } from '../../types';
 import { YouTubeEmbed } from "@next/third-parties/google";
 
 const DetailKpopVideos = () => {
   const { data: session, status } = useSession();
-  const params = useParams()
-  const id = params.id
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL
-  const url = `${apiUrl}/api/v1/kpop_videos/${id}`
-  const router = useRouter();
+  const params = useParams();
+  const id = params.id;
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const url = `${apiUrl}/api/v1/kpop_videos/${id}`;
+  const [thumbnailUrl, setThumbnailUrl] = useState('');
 
   const { data: rawKpopVideo, error } = useSWR<KpopVideo>(url, fetcherWithAuth);
-  // 'rawKpopVideo' を 'Record<string, unknown>' としてキャストし、キャメルケースに変換
   const camelCaseKpopVideo = rawKpopVideo ? camelcaseKeys(rawKpopVideo as unknown as Record<string, unknown>, { deep: true }) : null;
   const kpopVideo = camelCaseKpopVideo as unknown as KpopVideo;
 
@@ -28,20 +28,38 @@ const DetailKpopVideos = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 bg-gray-900 text-gray-200">
-      <div className="bg-gray-800 rounded-lg shadow-md overflow-hidden flex flex-col lg:flex-row">
-        <div className="lg:w-1/2">
-          <YouTubeEmbed videoid={kpopVideo.videoId} />
-        </div>
-        <div className="p-6 lg:w-1/2">
-          <h2 className="text-3xl font-bold text-gray-100">{kpopVideo.name}</h2>
-          <p className="mt-4 text-gray-400">アーティスト: {kpopVideo.artist.name}</p>
-          <p className="mt-2 text-gray-400">視聴回数: {kpopVideo.viewCount}</p>
-          <p className="mt-2 text-gray-400">投稿日: {new Date(kpopVideo.postedAt).toLocaleDateString()}</p>
-          <div className="mt-6 flex space-x-4">
-            <button className="px-4 py-2 bg-pink-600 text-gray-200 font-semibold rounded-lg shadow-md hover:bg-pink-500">お気に入りに追加</button>
-            <button className="px-4 py-2 bg-blue-600 text-gray-200 font-semibold rounded-lg shadow-md hover:bg-blue-500">シェア</button>
+    <div className="min-h-screen bg-gray-900 text-gray-100 p-4 sm:p-6">
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg border border-gray-700">
+          <div className="bg-black py-8">
+            <div className="max-w-4xl mx-auto aspect-w-16 aspect-h-9">
+              <div className="relative w-full" style={{ paddingTop: '56.25%' }}>
+                <iframe
+                  src={`https://www.youtube-nocookie.com/embed/${kpopVideo.videoId}?vq=hd1080&modestbranding=1&rel=0`}
+                  title={kpopVideo.name}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="absolute top-0 left-0 w-full h-full"
+                ></iframe>
+              </div>
+            </div>
           </div>
+          <div className="p-4 sm:p-6">
+            <h2 className="text-2xl font-bold mb-3 text-blue-400">
+              {kpopVideo.name}
+            </h2>
+            <p className="text-sm text-gray-400 mb-4">{kpopVideo.artist.name}</p>
+            <div className="flex items-center justify-between mb-6 text-xs text-gray-400">
+              <span>{kpopVideo.viewCount.toLocaleString()} 回視聴</span>
+              <span>{new Date(kpopVideo.postedAt).toLocaleDateString()}</span>
+            </div>
+            <div className="flex justify-center space-x-6">
+          </div>
+          </div>
+        </div>
+        <div className="mt-6 bg-gray-800 rounded-lg p-4 sm:p-6 shadow-lg border border-gray-700">
+          <h3 className="text-lg font-semibold mb-4 text-blue-400">コメント</h3>
+          {/* コメントコンポーネント */}
         </div>
       </div>
     </div>
