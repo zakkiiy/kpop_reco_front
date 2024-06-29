@@ -27,7 +27,7 @@ const KpopVideosIndex = () => {
     <div className="min-h-screen bg-gray-900 text-gray-100 p-2 sm:p-4">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold mb-6 text-center">K-pop Videos</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-0">
           {videos.map((video: KpopVideo) => (
             <div key={video.id} className="bg-gray-800 rounded-lg overflow-hidden shadow-lg border border-gray-700">
               <div className="aspect-w-16 aspect-h-9">
