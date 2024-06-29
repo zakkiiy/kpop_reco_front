@@ -12,3 +12,7 @@ export interface KpopVideo {
   postedAt: string;
   artist: Artist;
 }
+
+export interface HeaderProps {
+  setIsMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
