@@ -16,3 +16,11 @@ export interface KpopVideo {
 export interface HeaderProps {
   setIsMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
+
+export interface IconButtonProps {
+  icon: React.ReactNode;
+  onClick?: () => void;
+  active?: boolean;
+  label?: string;
+  videoId?: string;
+}
