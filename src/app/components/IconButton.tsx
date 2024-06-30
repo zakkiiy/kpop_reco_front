@@ -1,15 +1,16 @@
 import React from 'react';
-import useFavolite from '../../hooks/useFavolite';
+import useFavorite from '../../hooks/useFavorite';
 import { IconButtonProps } from '../types';
+import { AiOutlineHeart, AiFillHeart } from 'react-icons/ai';
 
-const IconButton: React.FC<IconButtonProps> = ({ icon, onClick, active = false, label, videoId }) => {
-  const { addFavolite, loading, error } = useFavolite(videoId);
+const IconButton: React.FC<IconButtonProps> = ({ videoId }) => {
+  const { addFavorite, deleteFavorite, loading, error, isFavorite } = useFavorite(videoId);
 
   const handleClick = async () => {
-    if (onClick) {
-      await onClick();
+    if (isFavorite) {
+      await deleteFavorite();
     } else {
-      await addFavolite();
+      await addFavorite();
     }
   };
 
@@ -17,12 +18,12 @@ const IconButton: React.FC<IconButtonProps> = ({ icon, onClick, active = false, 
     <button
       onClick={handleClick}
       className={`p-3 rounded-full transition duration-300 ease-in-out ${
-        active ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-gray-900 text-gray-300 hover:bg-gray-700'
+        isFavorite ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-gray-900 text-gray-300 hover:bg-gray-700'
       }`}
-      aria-label={label}
+      aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
       disabled={loading}
     >
-      {icon}
+      {isFavorite ? <AiFillHeart className="w-6 h-6" /> : <AiOutlineHeart className="w-6 h-6" />}
     </button>
   );
 };
