@@ -8,6 +8,8 @@ import { useSession } from 'next-auth/react';
 import camelcaseKeys from "camelcase-keys";
 import { KpopVideo } from '../../types';
 import { YouTubeEmbed } from "@next/third-parties/google";
+import { HeartIcon, ShareIcon, PlayIcon, QueueListIcon } from '@heroicons/react/24/outline';
+import IconButton from "../../components/IconButton"
 
 const DetailKpopVideos = () => {
   const { data: session, status } = useSession();
@@ -15,7 +17,6 @@ const DetailKpopVideos = () => {
   const id = params.id;
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const url = `${apiUrl}/api/v1/kpop_videos/${id}`;
-  const [thumbnailUrl, setThumbnailUrl] = useState('');
 
   const { data: rawKpopVideo, error } = useSWR<KpopVideo>(url, fetcherWithAuth);
   const camelCaseKpopVideo = rawKpopVideo ? camelcaseKeys(rawKpopVideo as unknown as Record<string, unknown>, { deep: true }) : null;
@@ -54,12 +55,15 @@ const DetailKpopVideos = () => {
               <span>{new Date(kpopVideo.postedAt).toLocaleDateString()}</span>
             </div>
             <div className="flex justify-center space-x-6">
-          </div>
+              <IconButton icon={<HeartIcon className="w-6 h-6" />} videoId={String(kpopVideo.id)} />
+              <IconButton icon={<ShareIcon className="w-6 h-6" />} />
+              <IconButton icon={<PlayIcon className="w-6 h-6" />} />
+              <IconButton icon={<QueueListIcon className="w-6 h-6" />} />
+            </div>
           </div>
         </div>
         <div className="mt-6 bg-gray-800 rounded-lg p-4 sm:p-6 shadow-lg border border-gray-700">
           <h3 className="text-lg font-semibold mb-4 text-blue-400">コメント</h3>
-          {/* コメントコンポーネント */}
         </div>
       </div>
     </div>
