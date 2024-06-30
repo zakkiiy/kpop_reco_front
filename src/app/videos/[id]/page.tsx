@@ -10,6 +10,8 @@ import { KpopVideo } from '../../types';
 import { YouTubeEmbed } from "@next/third-parties/google";
 import { HeartIcon, ShareIcon, PlayIcon, QueueListIcon } from '@heroicons/react/24/outline';
 import IconButton from "../../components/IconButton"
+import { AiOutlineHeart, AiFillHeart, AiOutlineShareAlt, AiOutlinePlayCircle, AiOutlineOrderedList } from 'react-icons/ai';
+
 
 const DetailKpopVideos = () => {
   const { data: session, status } = useSession();
@@ -55,10 +57,16 @@ const DetailKpopVideos = () => {
               <span>{new Date(kpopVideo.postedAt).toLocaleDateString()}</span>
             </div>
             <div className="flex justify-center space-x-6">
-              <IconButton icon={<HeartIcon className="w-6 h-6" />} videoId={String(kpopVideo.id)} />
-              <IconButton icon={<ShareIcon className="w-6 h-6" />} />
-              <IconButton icon={<PlayIcon className="w-6 h-6" />} />
-              <IconButton icon={<QueueListIcon className="w-6 h-6" />} />
+              <IconButton icon={<AiOutlineHeart className="w-6 h-6" />} videoId={String(kpopVideo.id)} />
+              <button className="p-3 rounded-full transition duration-300 ease-in-out bg-gray-900 text-gray-300 hover:bg-gray-700" aria-label="Share">
+                <AiOutlineShareAlt className="w-6 h-6" />
+              </button>
+              <button className="p-3 rounded-full transition duration-300 ease-in-out bg-gray-900 text-gray-300 hover:bg-gray-700" aria-label="Play">
+                <AiOutlinePlayCircle className="w-6 h-6" />
+              </button>
+              <button className="p-3 rounded-full transition duration-300 ease-in-out bg-gray-900 text-gray-300 hover:bg-gray-700" aria-label="Queue">
+                <AiOutlineOrderedList className="w-6 h-6" />
+              </button>
             </div>
           </div>
         </div>
