@@ -25,6 +25,7 @@ const PlaylistsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>();
+  const [playlistToDelete, setPlaylistToDelete] = useState<Playlist | null>(null);
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -48,6 +49,26 @@ const PlaylistsPage = () => {
     }
   };
 
+  const deletePlaylist = async (playlistId: number) => {
+    try {
+      const session = await getSession();
+      if (!session) {
+        throw new Error('User is not authenticated');
+      }
+      const token = session.accessToken;
+      await axios.delete(`${apiUrl}/api/v1/playlists/${playlistId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          withCredentials: true,
+        },
+      });
+      mutate(`${apiUrl}/api/v1/playlists`);
+      setPlaylistToDelete(null);
+    } catch (error) {
+      console.error('Error deleting playlist', error);
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-6">
@@ -65,7 +86,6 @@ const PlaylistsPage = () => {
           <div
             key={playlist.id}
             className="relative group bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg overflow-hidden shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl"
-            onClick={() => setSelectedPlaylist(playlist)}
           >
             <div className="absolute inset-0 bg-black opacity-50 group-hover:opacity-70 transition-opacity duration-300"></div>
             <div className="relative p-6 flex flex-col h-full">
@@ -73,9 +93,24 @@ const PlaylistsPage = () => {
                 <MusicalNoteIcon className="h-12 w-12 text-white opacity-75 mb-4" />
                 <h3 className="text-xl font-bold text-white mb-2">{playlist.name}</h3>
               </div>
-              <div className="mt-4">
-                <button className="text-sm text-white bg-white bg-opacity-20 hover:bg-opacity-30 transition-colors duration-300 rounded-full py-2 px-4">
+              <div className="mt-4 flex space-x-2">
+                <button 
+                  className="flex-grow text-sm text-white bg-white bg-opacity-20 hover:bg-opacity-30 transition-colors duration-300 rounded-full py-2 px-4"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedPlaylist(playlist);
+                  }}
+                >
                   View Playlist
+                </button>
+                <button 
+                  className="text-sm text-white bg-red-500 bg-opacity-80 hover:bg-opacity-100 transition-colors duration-300 rounded-full py-2 px-4"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setPlaylistToDelete(playlist);
+                  }}
+                >
+                  Delete
                 </button>
               </div>
             </div>
@@ -145,6 +180,39 @@ const PlaylistsPage = () => {
               >
                 Close
               </button>
+            </div>
+          </div>
+        </Dialog>
+      )}
+
+      {playlistToDelete && (
+        <Dialog
+          open={!!playlistToDelete}
+          onClose={() => setPlaylistToDelete(null)}
+          className="fixed z-10 inset-0 overflow-y-auto"
+        >
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="relative bg-white rounded-lg max-w-md w-full mx-auto p-6">
+              <Dialog.Title className="text-lg font-medium text-gray-900 mb-4">
+                Delete Playlist
+              </Dialog.Title>
+              <p className="text-sm text-gray-500 mb-4">
+                Are you sure you want to delete the playlist `{playlistToDelete.name}`? This action cannot be undone.
+              </p>
+              <div className="flex justify-end space-x-2">
+                <button
+                  className="py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  onClick={() => setPlaylistToDelete(null)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  onClick={() => deletePlaylist(playlistToDelete.id)}
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
         </Dialog>
