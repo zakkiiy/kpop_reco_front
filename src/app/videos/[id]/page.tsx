@@ -11,7 +11,9 @@ import { YouTubeEmbed } from "@next/third-parties/google";
 import { HeartIcon, ShareIcon, PlayIcon, QueueListIcon } from '@heroicons/react/24/outline';
 import IconButton from "../../components/IconButton"
 import { AiOutlineHeart, AiFillHeart, AiOutlineShareAlt, AiOutlinePlayCircle, AiOutlineOrderedList } from 'react-icons/ai';
-
+import PlaylistModal from '../../components/PlaylistModal';
+import { getSession } from 'next-auth/react';
+import axios from 'axios';
 
 const DetailKpopVideos = () => {
   const { data: session, status } = useSession();
@@ -19,10 +21,20 @@ const DetailKpopVideos = () => {
   const id = params.id;
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const url = `${apiUrl}/api/v1/kpop_videos/${id}`;
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { data: rawKpopVideo, error } = useSWR<KpopVideo>(url, fetcherWithAuth);
   const camelCaseKpopVideo = rawKpopVideo ? camelcaseKeys(rawKpopVideo as unknown as Record<string, unknown>, { deep: true }) : null;
   const kpopVideo = camelCaseKpopVideo as unknown as KpopVideo;
+
+  const { data: playlists, error: playlistsError } = useSWR(
+    `${apiUrl}/api/v1/playlists`,
+    fetcherWithAuth
+  );
+
+  const handleAddToPlaylist = () => {
+    // 追加予定
+  } 
 
   if (error) return <p className="text-center text-red-500">エラーが発生しました。</p>;
 
@@ -57,16 +69,33 @@ const DetailKpopVideos = () => {
               <span>{new Date(kpopVideo.postedAt).toLocaleDateString()}</span>
             </div>
             <div className="flex justify-center space-x-6">
-              <IconButton icon={<AiOutlineHeart className="w-6 h-6" />} videoId={String(kpopVideo.id)} />
+            <IconButton
+              type="favorite"
+              videoId={String(kpopVideo.id)}
+              icon={<AiOutlineHeart className="w-6 h-6" />}
+            />
+              
               <button className="p-3 rounded-full transition duration-300 ease-in-out bg-gray-900 text-gray-300 hover:bg-gray-700" aria-label="Share">
                 <AiOutlineShareAlt className="w-6 h-6" />
               </button>
               <button className="p-3 rounded-full transition duration-300 ease-in-out bg-gray-900 text-gray-300 hover:bg-gray-700" aria-label="Play">
                 <AiOutlinePlayCircle className="w-6 h-6" />
               </button>
-              <button className="p-3 rounded-full transition duration-300 ease-in-out bg-gray-900 text-gray-300 hover:bg-gray-700" aria-label="Queue">
-                <AiOutlineOrderedList className="w-6 h-6" />
-              </button>
+              
+              <IconButton 
+                type="playlist"
+                videoId={String(kpopVideo.id)} 
+                onClick={() => setIsModalOpen(true)}
+                icon={<AiOutlineHeart className="w-6 h-6" />}
+              />
+              
+              <PlaylistModal 
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                videoId={String(kpopVideo.id)}
+                playlists={playlists || []}
+                onAddToPlaylist={handleAddToPlaylist}
+              />
             </div>
           </div>
         </div>

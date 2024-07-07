@@ -23,4 +23,18 @@ export interface IconButtonProps {
   active?: boolean;
   label?: string;
   videoId?: string;
+  type: 'favorite' | 'playlist';
+}
+
+export interface Playlist {
+  id: number;
+  name: string;
+}
+
+export interface PlaylistModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  videoId: string;
+  playlists: Playlist[];
+  onAddToPlaylist: (playlistId: number) => void;
 }
