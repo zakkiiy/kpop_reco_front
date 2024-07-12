@@ -4,20 +4,87 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import { Dialog } from '@headlessui/react';
-import { PlusIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, XMarkIcon, PlayIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { MusicalNoteIcon } from '@heroicons/react/24/solid';
 import { getSession } from 'next-auth/react';
 import useSWR, { mutate } from 'swr';
 import fetcherWithAuth from '../utils/fetcher';
-import { MusicalNoteIcon } from '@heroicons/react/24/solid';
 
 interface Playlist {
   id: number;
   name: string;
 }
 
+interface PlaylistItem {
+  id: number;
+  kpop_video: {
+    id: number;
+    name: string;
+    artist: {
+      id: number;
+      name: string;
+    }
+  }
+}
+
 interface FormData {
   name: string;
 }
+
+const ViewPlaylistModal = ({ playlist, isOpen, onClose }: { playlist: Playlist | null, isOpen: boolean, onClose: () => void }) => {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const { data: playlistItems, error } = useSWR<PlaylistItem[]>(
+    isOpen && playlist ? `${apiUrl}/api/v1/playlists/${playlist.id}/playlist_items` : null,
+    fetcherWithAuth
+  );
+
+  if (!isOpen || !playlist) return null;
+
+  return (
+    <Dialog
+      open={isOpen}
+      onClose={onClose}
+      className="fixed z-10 inset-0 overflow-y-auto"
+    >
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="relative bg-white rounded-lg max-w-3xl w-full mx-auto p-6">
+          <div className="flex justify-between items-center mb-4">
+            <Dialog.Title className="text-2xl font-semibold text-gray-900">
+              {playlist.name}
+            </Dialog.Title>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-500"
+            >
+              <XMarkIcon className="h-6 w-6" />
+            </button>
+          </div>
+          {error && <p className="text-red-500">Error loading playlist items</p>}
+          {!playlistItems && <p className="text-gray-500">Loading...</p>}
+          {playlistItems && (
+            <ul className="divide-y divide-gray-200">
+              {Array.isArray(playlistItems) && playlistItems?.map((item) => (
+                <li key={item.id} className="py-4 flex justify-between items-center">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{item.kpop_video.name}</p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <button className="text-gray-400 hover:text-gray-500">
+                      <PlayIcon className="h-5 w-5" />
+                    </button>
+                    <button className="text-gray-400 hover:text-red-500">
+                      <TrashIcon className="h-5 w-5" />
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </Dialog>
+  );
+};
 
 const PlaylistsPage = () => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -34,7 +101,6 @@ const PlaylistsPage = () => {
         throw new Error('User is not authenticated');
       }
       const token = session.accessToken;
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       const response = await axios.post(`${apiUrl}/api/v1/playlists`, data, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -150,9 +216,8 @@ const PlaylistsPage = () => {
                   Cancel
                 </button>
                 <button
-                  type="button"
+                  type="submit"
                   className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  onClick={handleSubmit(onSubmit)}
                 >
                   Create
                 </button>
@@ -162,28 +227,11 @@ const PlaylistsPage = () => {
         </div>
       </Dialog>
 
-      {selectedPlaylist && (
-        <Dialog
-          open={!!selectedPlaylist}
-          onClose={() => setSelectedPlaylist(null)}
-          className="fixed z-10 inset-0 overflow-y-auto"
-        >
-          <div className="flex items-center justify-center min-h-screen">
-            <div className="relative bg-white rounded-lg max-w-md w-full mx-auto p-6">
-              <Dialog.Title className="text-lg font-medium text-gray-900 mb-4">
-                {selectedPlaylist.name}
-              </Dialog.Title>
-              <p className="text-sm text-gray-500 mb-4">5 songs</p>
-              <button
-                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                onClick={() => setSelectedPlaylist(null)}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </Dialog>
-      )}
+      <ViewPlaylistModal
+        playlist={selectedPlaylist}
+        isOpen={!!selectedPlaylist}
+        onClose={() => setSelectedPlaylist(null)}
+      />
 
       {playlistToDelete && (
         <Dialog
@@ -197,7 +245,7 @@ const PlaylistsPage = () => {
                 Delete Playlist
               </Dialog.Title>
               <p className="text-sm text-gray-500 mb-4">
-                Are you sure you want to delete the playlist `{playlistToDelete.name}`? This action cannot be undone.
+                
               </p>
               <div className="flex justify-end space-x-2">
                 <button
