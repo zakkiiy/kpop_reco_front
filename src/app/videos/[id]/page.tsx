@@ -72,7 +72,6 @@ const DetailKpopVideos = () => {
             <IconButton
               type="favorite"
               videoId={String(kpopVideo.id)}
-              icon={<AiOutlineHeart className="w-6 h-6" />}
             />
               
               <button className="p-3 rounded-full transition duration-300 ease-in-out bg-gray-900 text-gray-300 hover:bg-gray-700" aria-label="Share">
@@ -86,7 +85,6 @@ const DetailKpopVideos = () => {
                 type="playlist"
                 videoId={String(kpopVideo.id)} 
                 onClick={() => setIsModalOpen(true)}
-                icon={<AiOutlineHeart className="w-6 h-6" />}
               />
               
               <PlaylistModal 

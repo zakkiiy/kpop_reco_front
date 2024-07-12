@@ -18,7 +18,6 @@ export interface HeaderProps {
 }
 
 export interface IconButtonProps {
-  icon: React.ReactNode;
   onClick?: () => void;
   active?: boolean;
   label?: string;
