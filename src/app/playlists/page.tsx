@@ -9,6 +9,8 @@ import { MusicalNoteIcon } from '@heroicons/react/24/solid';
 import { getSession } from 'next-auth/react';
 import useSWR, { mutate } from 'swr';
 import fetcherWithAuth from '../utils/fetcher';
+import YouTube from 'react-youtube';
+import { YouTubeEmbed } from "@next/third-parties/google";
 
 interface Playlist {
   id: number;
@@ -20,11 +22,17 @@ interface PlaylistItem {
   kpop_video: {
     id: number;
     name: string;
+    video_id: string;
     artist: {
       id: number;
       name: string;
     }
   }
+}
+
+interface PlaylistData {
+  playlist_name: string;
+  items: PlaylistItem[];
 }
 
 interface FormData {
@@ -33,10 +41,13 @@ interface FormData {
 
 const ViewPlaylistModal = ({ playlist, isOpen, onClose }: { playlist: Playlist | null, isOpen: boolean, onClose: () => void }) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  const { data: playlistItems, error } = useSWR<PlaylistItem[]>(
+  const { data: playlistItems, error } = useSWR<PlaylistData>(
     isOpen && playlist ? `${apiUrl}/api/v1/playlists/${playlist.id}/playlist_items` : null,
     fetcherWithAuth
   );
+
+  console.log('Playlist:', playlist);
+  console.log('Playlist Items:', playlistItems);
 
   if (!isOpen || !playlist) return null;
 
@@ -46,35 +57,51 @@ const ViewPlaylistModal = ({ playlist, isOpen, onClose }: { playlist: Playlist |
       onClose={onClose}
       className="fixed z-10 inset-0 overflow-y-auto"
     >
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="relative bg-white rounded-lg max-w-3xl w-full mx-auto p-6">
-          <div className="flex justify-between items-center mb-4">
-            <Dialog.Title className="text-2xl font-semibold text-gray-900">
-              {playlist.name}
+      <div className="flex items-center justify-center min-h-screen px-4 text-center">
+        <div className="inline-block w-full max-w-4xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+          <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-r from-purple-600 to-indigo-600"></div>
+          
+          <div className="mt-8">
+            <Dialog.Title as="h3" className="text-3xl font-bold leading-6 text-gray-900 mb-4">
+              {playlistItems ? playlistItems.playlist_name : playlist.name}
             </Dialog.Title>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-500"
+              className="absolute top-4 right-4 text-white hover:text-gray-200"
             >
               <XMarkIcon className="h-6 w-6" />
             </button>
           </div>
-          {error && <p className="text-red-500">Error loading playlist items</p>}
-          {!playlistItems && <p className="text-gray-500">Loading...</p>}
-          {playlistItems && (
-            <ul className="divide-y divide-gray-200">
-              {Array.isArray(playlistItems) && playlistItems?.map((item) => (
-                <li key={item.id} className="py-4 flex justify-between items-center">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{item.kpop_video.name}</p>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <button className="text-gray-400 hover:text-gray-500">
-                      <PlayIcon className="h-5 w-5" />
-                    </button>
-                    <button className="text-gray-400 hover:text-red-500">
-                      <TrashIcon className="h-5 w-5" />
-                    </button>
+
+          {error && <p className="text-red-500 mt-4">Error loading playlist items: {error.message}</p>}
+          {!playlistItems && !error && <p className="text-gray-500 mt-4">Loading...</p>}
+          
+          {playlistItems && playlistItems.items && (
+            <ul className="mt-6 space-y-6">
+              {playlistItems.items.map((item) => (
+                <li key={item.id} className="bg-gray-50 rounded-lg shadow-md overflow-hidden">
+                  <div className="flex items-center p-4">
+                  <iframe
+                    width="280"
+                    height="157"
+                    src={`https://www.youtube-nocookie.com/embed/${item.kpop_video.video_id}?autoplay=0&vq=hd1080&modestbranding=1&rel=0`}
+                    title={item.kpop_video.name}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                    <div className="ml-6 flex-1">
+                      <p className="text-lg font-semibold text-gray-900">{item.kpop_video.name}</p>
+                      <p className="text-sm text-gray-500">{item.kpop_video?.artist?.name}</p>
+                    </div>
+                    <div className="ml-4 flex-shrink-0">
+                      <button className="text-purple-600 hover:text-purple-700 mr-2">
+                        <PlayIcon className="h-6 w-6" />
+                      </button>
+                      <button className="text-red-500 hover:text-red-600">
+                        <TrashIcon className="h-6 w-6" />
+                      </button>
+                    </div>
                   </div>
                 </li>
               ))}
@@ -164,6 +191,7 @@ const PlaylistsPage = () => {
                   className="flex-grow text-sm text-white bg-white bg-opacity-20 hover:bg-opacity-30 transition-colors duration-300 rounded-full py-2 px-4"
                   onClick={(e) => {
                     e.stopPropagation();
+                    console.log('Selected playlist:', playlist);
                     setSelectedPlaylist(playlist);
                   }}
                 >
