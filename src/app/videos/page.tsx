@@ -31,7 +31,7 @@ const KpopVideosIndex = () => {
           {videos.map((video: KpopVideo) => (
             <div key={video.id} className="bg-gray-800 rounded-lg overflow-hidden shadow-lg border border-gray-700">
               <div className="aspect-w-16 aspect-h-9">
-                <YouTubeEmbed 
+                <YouTubeEmbed
                   videoid={video.videoId}
                   params="controls=0&modestbranding=1&rel=0"
                 />
